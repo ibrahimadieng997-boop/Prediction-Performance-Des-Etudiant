@@ -12,7 +12,7 @@ requirements.txt      → dépendances Python
 encoder.joblib         → LabelEncoder (variable "Activités extrascolaires")
 rr_model.joblib         → modèle Ridge entraîné
 scaler.joblib          → RobustScaler (reconstruit à partir des statistiques
-                          réelles du dataset : médiane/IQR de chaque variable,
+README.md                         réelles du dataset : médiane/IQR de chaque variable,
                           car le fichier scaler original fourni était corrompu)
 ```
 
