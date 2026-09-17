@@ -1757,7 +1757,7 @@ with tab1:
                     #     {tier}
                     # </div>
 
-                    # <div class="result-sub">
+                    # <div class="result-sub
                     st.markdown(
     """<div>⚠️ Indice de performance prédit</div>
 <div class="result-score">51.29</div>
@@ -1767,6 +1767,8 @@ Intervalle approximatif (95 %) : 47.3 – 55.3 &nbsp;|&nbsp; Confiance : 98.9 %
 </div>""",
     unsafe_allow_html=True
 )
+                    ">
+                    
 
                         Intervalle approximatif (95 %) :
                         {max(
