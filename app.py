@@ -580,6 +580,7 @@ Application Streamlit — projet de portfolio Data Science / Machine Learning.
 Modèle : Ridge Regression
 Métriques de validation : R² = 0.9892 | RMSE = 2.04
 """
+# -*- coding: utf-8 -*-
 
 import streamlit as st
 import joblib as jb
