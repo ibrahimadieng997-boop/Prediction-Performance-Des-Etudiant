@@ -612,20 +612,13 @@ FEATURE_RANGES = {
 }
 TARGET_MIN, TARGET_MAX, TARGET_MEAN = 10, 100, 55.22
 MODEL_R2 = 0.9892
-MODEL_RMSE = 2.0394  # RMSE réel mesuré sur le jeu de validation
+MODEL_RMSE = 2.04  # RMSE réel mesuré sur le jeu de validation
 CI_MARGIN = 1.96 * MODEL_RMSE  # approx. intervalle de prédiction à 95% (résidus ~ normaux)
 HISTORY_FILE = "historique_predictions.csv"
 MODEL_PATH = "rr_model.joblib"
 ENCODER_PATH = "encoder.joblib"
 SCALER_PATH = "scaler.joblib"
 
-# Ordre des colonnes attendu par le pipeline (scaler + modèle) à l'entraînement.
-# ⚠️ C'est LA cause la plus fréquente d'un score qui reste bloqué au minimum :
-# si cet ordre ne correspond pas exactement à celui utilisé lors du fit() du
-# scaler/modèle, StandardScaler applique la mauvaise moyenne/écart-type à
-# chaque colonne et le modèle reçoit des valeurs totalement aberrantes
-# (souvent très négatives), d'où un score qui retombe systématiquement au
-# plancher (10) après clipping.
 DEFAULT_FEATURE_ORDER = [
     "Heures_etude",
     "Notes_precedentes",
@@ -733,9 +726,7 @@ div.stButton > button {
 }
 div.stButton > button:hover { transform: scale(1.02); box-shadow: 0 6px 16px rgba(67,56,202,0.35); }
 
-/* KPI du Tableau de bord (Prédictions réalisées, Score moyen prédit,
-   Confiance moyenne, Meilleur score) : carte foncée + valeurs en blanc,
-   Arial, en gras, avec une taille plus grande. */
+/* KPI du Tableau de bord */
 div[data-testid="stMetric"] {
     background: linear-gradient(135deg, #1e293b, #0f172a);
     border-radius: 16px;
@@ -790,14 +781,6 @@ def save_history():
 
 
 def compute_confidence(heures_etude, notes_prec, heures_sommeil, sujets_pratiques):
-    """
-    Indice de cohérence / confiance (0-100), construit à partir de deux facteurs réels :
-    1) La précision globale du modèle sur le jeu de validation (R² = 0.9892)
-    2) La plausibilité des valeurs saisies par rapport aux plages du jeu d'entraînement
-       (un modèle linéaire est moins fiable en extrapolation hors de son domaine appris)
-    Ce n'est PAS un intervalle de confiance statistique à proprement parler, mais un
-    indicateur pédagogique transparent -- documenté dans l'application.
-    """
     values = {
         "Heures_etude": heures_etude,
         "Notes_precedentes": notes_prec,
@@ -812,26 +795,15 @@ def compute_confidence(heures_etude, notes_prec, heures_sommeil, sujets_pratique
         if lo <= v <= hi:
             scores.append(1.0)
         else:
-            excess = min(lo - v, v - hi) if v < lo or v > hi else 0
             excess = (lo - v) if v < lo else (v - hi)
             scores.append(max(0.0, 1 - excess / width))
     plausibility = float(np.mean(scores))
-    base = MODEL_R2 * 100  # ~98.9
-    confidence = base * (0.55 + 0.45 * plausibility)  # plancher réaliste même hors plage
+    base = MODEL_R2 * 100
+    confidence = base * (0.55 + 0.45 * plausibility)
     return round(min(99.5, max(35.0, confidence)), 1)
 
 
 def predict_one(heures_etude, notes_prec, activite, heures_sommeil, sujets_pratiques):
-    """
-    IMPORTANT : le modèle Ridge chargé a été entraîné sur les variables
-    BRUTES (non standardisées) — vérifié en testant directement les
-    fichiers .joblib fournis. Le `scaler.joblib` (RobustScaler) ne fait
-    donc PAS partie du pipeline d'inférence réel : lui passer les features
-    avant `model.predict()` écrase le signal des coefficients face à
-    l'intercept (-33.92) et fait retomber systématiquement la prédiction
-    au plancher (10). On appelle donc le modèle directement sur les
-    valeurs brutes, dans l'ordre utilisé à l'entraînement.
-    """
     activite_enc = encoder.transform([activite])[0]
     x_new = np.array([[
         heures_etude, notes_prec, activite_enc, heures_sommeil, sujets_pratiques
@@ -839,7 +811,14 @@ def predict_one(heures_etude, notes_prec, activite, heures_sommeil, sujets_prati
     y_pred_raw = float(model.predict(x_new)[0])
     y_pred = round(min(TARGET_MAX, max(TARGET_MIN, y_pred_raw)), 2)
     confidence = compute_confidence(heures_etude, notes_prec, heures_sommeil, sujets_pratiques)
-    return y_pred, confidence
+    
+    debug_info = {
+        "prediction_avant_clipping": y_pred_raw,
+        "colonnes_utilisees": DEFAULT_FEATURE_ORDER,
+        "valeurs_brutes": [heures_etude, notes_prec, activite_enc, heures_sommeil, sujets_pratiques],
+    }
+    
+    return y_pred, confidence, debug_info
 
 
 def add_to_history(row: dict):
@@ -853,7 +832,7 @@ def add_to_history(row: dict):
 # =========================================================================
 st.markdown("""
 <div class="hero">
-    <h1>🎓 Prédiction de la Performance académiquedes  des Étudiants</h1>
+    <h1>🎓 Prédiction de la Performance académique des Étudiants</h1>
     <p>Plateforme de Machine Learning pour anticiper la réussite académique et cibler
     l'accompagnement pédagogique — Régression Ridge, R² = 98.9%</p>
     <div class="badge-row">
@@ -873,7 +852,7 @@ if model is None or encoder is None or scaler is None:
     st.stop()
 
 # =========================================================================
-# SIDEBAR — Fiche modèle (crédibilité pour recruteurs)
+# SIDEBAR — Fiche modèle
 # =========================================================================
 with st.sidebar:
     st.markdown("### 📋 Fiche du modèle")
@@ -982,9 +961,6 @@ with tab1:
             </div>
             """, unsafe_allow_html=True)
 
-            # Bloc de diagnostic : à garder pendant que vous vérifiez le
-            # pipeline, à retirer (ou mettre derrière un flag admin) une fois
-            # que les prédictions sont cohérentes.
             debug = st.session_state.get("last_debug")
             if debug is not None:
                 raw = debug["prediction_avant_clipping"]
@@ -1158,7 +1134,6 @@ with tab3:
                 },
             )
         except Exception:
-            # Repli si version de Streamlit trop ancienne pour column_config avancé
             st.dataframe(hist_df[display_cols].iloc[::-1], use_container_width=True, hide_index=True)
 
         st.markdown("##### 📈 Analyses graphiques")
