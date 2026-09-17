@@ -231,7 +231,7 @@ def add_to_history(row: dict):
 # =========================================================================
 st.markdown("""
 <div class="hero">
-    <h1>🎓 Prédiction de la Performance des Étudiants</h1>
+    <h1>🎓 Prédiction de la Performance académiquedes  des Étudiants</h1>
     <p>Plateforme de Machine Learning pour anticiper la réussite académique et cibler
     l'accompagnement pédagogique — Régression Ridge, R² = 98.9%</p>
     <div class="badge-row">
