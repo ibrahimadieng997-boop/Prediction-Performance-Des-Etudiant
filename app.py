@@ -1718,80 +1718,81 @@ with tab1:
     # RESULTAT
     # ---------------------------------------------------------------------
 
-    with col_result:
+   with col_result:
 
-        st.markdown(
-            "#### 🎯 Résultat"
+    st.markdown("#### 🎯 Résultat")
+
+    if "last_result" in st.session_state:
+
+        r = st.session_state.last_result
+
+        tier, color, icon = get_tier(
+            r["Score_predit"]
         )
 
-        if "last_result" in st.session_state:
+        # ============================================================
+        # VALEURS DU RÉSULTAT
+        # ============================================================
 
-            r = st.session_state.last_result
+        score_affiche = float(r["Score_predit"])
+        confiance_affiche = float(r["Confiance"])
 
-            tier, color, icon = get_tier(
-                r["Score_predit"]
-            )
-               # ============================================================
-# RÉSULTAT DE LA PRÉDICTION
-# ============================================================
+        # Intervalle approximatif à 95 %
+        borne_inf = max(
+            TARGET_MIN,
+            score_affiche - CI_MARGIN
+        )
 
-score_affiche = float(score)
+        borne_sup = min(
+            TARGET_MAX,
+            score_affiche + CI_MARGIN
+        )
 
-marge = 4.0
-borne_inf = max(0, score_affiche - marge)
-borne_sup = min(100, score_affiche + marge)
+        # ============================================================
+        # AFFICHAGE DU RÉSULTAT
+        # ============================================================
 
-niveau = get_tier(score_affiche)[0]
+        st.markdown(
+            f"""
+            <div class="result-card">
 
-st.markdown(
-    f"""
-<div class="result-title">
-    ⚠️ Indice de performance prédit
-</div>
-
-<div class="result-score">
-    {score_affiche:.2f}
-</div>
-
-<div class="result-tier">
-    {niveau}
-</div>
-
-<div class="result-sub">
-    Intervalle approximatif (95 %) :
-    <strong>{borne_inf:.1f} – {borne_sup:.1f}</strong>
-    &nbsp; | &nbsp;
-    Confiance :
-    <strong>{confiance:.1f} %</strong>
-</div>
-""",
-    unsafe_allow_html=True
-)
-
-                        Intervalle approximatif (95 %) :
-                        {max(
-                            TARGET_MIN,
-                            r["Score_predit"] - CI_MARGIN
-                        ):.1f}
-
-                        –
-
-                        {min(
-                            TARGET_MAX,
-                            r["Score_predit"] + CI_MARGIN
-                        ): .1f}
-
-                        &nbsp; | &nbsp;
-
-                        Confiance :
-                        {r["Confiance"]} %
-
-                    </div>
-
+                <div class="result-title">
+                    {icon} Indice de performance prédit
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
+
+                <div class="result-score">
+                    {score_affiche:.2f}
+                </div>
+
+                <div class="result-tier">
+                    {tier}
+                </div>
+
+                <div class="result-sub">
+                    Intervalle approximatif (95 %) :
+                    <strong>
+                        {borne_inf:.1f} – {borne_sup:.1f}
+                    </strong>
+
+                    &nbsp; | &nbsp;
+
+                    Confiance :
+                    <strong>
+                        {confiance_affiche:.1f} %
+                    </strong>
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    else:
+
+        st.info(
+            "Aucune prédiction disponible. "
+            "Veuillez effectuer une prédiction."
+        )
 
 
             # -------------------------------------------------------------
