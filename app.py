@@ -1344,83 +1344,52 @@ def add_to_history(row: dict):
 
 
 # =========================================================================
-# EN-TETE
+# =========================================================================
+# EN-TÊTE
 # =========================================================================
 
 st.markdown(
     """
-# <div class="hero">
+    <div class="hero">
 
-#     <h1>
-#         🎓 Prédiction de la Performance Académique des Étudiants
-#     </h1>
+        <h1>
+            🎓 Prédiction de la Performance Académique des Étudiants
+        </h1>
 
-#     <p>
-#         Plateforme de Machine Learning pour prédire
-#         la performance académique et faciliter
-#         l'accompagnement pédagogique.
-#         — Régression Ridge, R² = 98,92 %
-#     </p>
+        <p>
+            Plateforme intelligente basée sur le Machine Learning pour prédire
+            la performance académique des étudiants à partir de leurs habitudes
+            d'étude, de sommeil et de leurs résultats antérieurs.
+            <br>
+            <strong>Modèle : Régression Ridge | R² = 98,92 %</strong>
+        </p>
 
-#     <div class="badge-row">
+        <div class="badge-row">
 
-#         <span class="tech-badge">
-#             🐍 Python
-#         </span>
+            <span class="tech-badge">
+                🐍 Python
+            </span>
 
-#         <span class="tech-badge">
-#             🔬 Scikit-learn
-#         </span>
+            <span class="tech-badge">
+                🤖 Machine Learning
+            </span>
 
-#         <span class="tech-badge">
-#             📊 Plotly
-#         </span>
+            <span class="tech-badge">
+                🔬 Scikit-learn
+            </span>
 
-#         <span class="tech-badge">
-#             ⚡ Streamlit
-#         </span>
+            <span class="tech-badge">
+                📊 Plotly
+            </span>
 
-#     </div>
+            <span class="tech-badge">
+                ⚡ Streamlit
+            </span>
 
-# </div>
-<h1>
-    🎓 Prédiction de la Performance Académique des Étudiants
-</h1>
+        </div>
 
-<p>
-    Plateforme intelligente basée sur le Machine Learning pour prédire
-    la performance académique des étudiants à partir de leurs habitudes
-    d'étude, de sommeil et de leurs résultats antérieurs.
-    — Modèle : Régression Ridge | R² = 98,92 %
-</p>
-
-<div class="badge-row">
-
-```
-<span class="tech-badge">
-    🐍 Python
-</span>
-
-<span class="tech-badge">
-    🤖 Machine Learning
-</span>
-
-<span class="tech-badge">
-    🔬 Scikit-learn
-</span>
-
-<span class="tech-badge">
-    📊 Plotly
-</span>
-
-<span class="tech-badge">
-    ⚡ Streamlit
-</span>
-```
-
-</div>
-
-""",
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
