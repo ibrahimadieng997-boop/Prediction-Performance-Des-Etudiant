@@ -1347,7 +1347,6 @@ def add_to_history(row: dict):
 # =========================================================================
 # EN-TÊTE
 # =========================================================================
-
 st.markdown(
     """
     <div class="hero">
@@ -1366,29 +1365,18 @@ st.markdown(
 
         <div class="badge-row">
 
-            <span class="tech-badge">
-                🐍 Python
-            </span>
-
-            <span class="tech-badge">
-                🤖 Machine Learning
-            </span>
-
-            <span class="tech-badge">
-                🔬 Scikit-learn
-            </span>
-
-            <span class="tech-badge">
-                📊 Plotly
-            </span>
-
-            <span class="tech-badge">
-                ⚡ Streamlit
-            </span>
+            <span class="tech-badge">🐍 Python</span>
+            <span class="tech-badge">🤖 Machine Learning</span>
+            <span class="tech-badge">🔬 Scikit-learn</span>
+            <span class="tech-badge">📊 Plotly</span>
+            <span class="tech-badge">⚡ Streamlit</span>
 
         </div>
 
     </div>
+    """,
+    unsafe_allow_html=True
+)
     """,
     unsafe_allow_html=True
 )
