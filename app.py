@@ -1731,54 +1731,42 @@ with tab1:
             tier, color, icon = get_tier(
                 r["Score_predit"]
             )
-            # st.markdown(
-            #     f"""
-            #     <div class="result-card"
-            #          style="
-            #          background:
-            #          linear-gradient(
-            #              135deg,
-            #              {color}dd,
-            #              {color}99
-            #          );
-            #          ">
+             # ============================================================
+# AFFICHAGE DU RÉSULTAT
+# ============================================================
 
-            #         <div>
-            #             {icon}
-            #             Indice de performance prédit
-            #         </div>
+score_affiche = float(score)
 
-            #         <div class="result-score">
-            #             {r["Score_predit"]}
-            #         </div>
+# Intervalle approximatif
+marge = 4.0
+borne_inf = max(0, score_affiche - marge)
+borne_sup = min(100, score_affiche + marge)
 
-            #         <div class="result-tier">
-            #             {tier}
-            #         </div>
+# Niveau de performance
+niveau = get_tier(score_affiche)[0]
 
-            #         <div class="result-sub">
-            st.markdown(
-    """
-    <div class="result-title">
-        ⚠️ Indice de performance prédit
-    </div>
+st.markdown(
+    f"""
+<div class="result-title">
+    ⚠️ Indice de performance prédit
+</div>
 
-    <div class="result-score">
-        51.29
-    </div>
+<div class="result-score">
+    {score_affiche:.2f}
+</div>
 
-    <div class="result-tier">
-        Moyen
-    </div>
+<div class="result-tier">
+    {niveau}
+</div>
 
-    <div class="result-sub">
-        Intervalle approximatif (95 %) :
-        <strong>47.3 – 55.3</strong>
-        &nbsp; | &nbsp;
-        Confiance :
-        <strong>98.9 %</strong>
-    </div>
-    """,
+<div class="result-sub">
+    Intervalle approximatif (95 %) :
+    <strong>{borne_inf:.1f} – {borne_sup:.1f}</strong>
+    &nbsp; | &nbsp;
+    Confiance :
+    <strong>{confiance:.1f} %</strong>
+</div>
+""",
     unsafe_allow_html=True
 )
 
