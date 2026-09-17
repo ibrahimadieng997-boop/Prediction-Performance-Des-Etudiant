@@ -1731,34 +1731,56 @@ with tab1:
             tier, color, icon = get_tier(
                 r["Score_predit"]
             )
+            # st.markdown(
+            #     f"""
+            #     <div class="result-card"
+            #          style="
+            #          background:
+            #          linear-gradient(
+            #              135deg,
+            #              {color}dd,
+            #              {color}99
+            #          );
+            #          ">
 
+            #         <div>
+            #             {icon}
+            #             Indice de performance prédit
+            #         </div>
 
+            #         <div class="result-score">
+            #             {r["Score_predit"]}
+            #         </div>
+
+            #         <div class="result-tier">
+            #             {tier}
+            #         </div>
+
+            #         <div class="result-sub">
             st.markdown(
-                f"""
-                <div class="result-card"
-                     style="
-                     background:
-                     linear-gradient(
-                         135deg,
-                         {color}dd,
-                         {color}99
-                     );
-                     ">
+    """
+    <div class="result-title">
+        ⚠️ Indice de performance prédit
+    </div>
 
-                    <div>
-                        {icon}
-                        Indice de performance prédit
-                    </div>
+    <div class="result-score">
+        51.29
+    </div>
 
-                    <div class="result-score">
-                        {r["Score_predit"]}
-                    </div>
+    <div class="result-tier">
+        Moyen
+    </div>
 
-                    <div class="result-tier">
-                        {tier}
-                    </div>
-
-                    <div class="result-sub">
+    <div class="result-sub">
+        Intervalle approximatif (95 %) :
+        <strong>47.3 – 55.3</strong>
+        &nbsp; | &nbsp;
+        Confiance :
+        <strong>98.9 %</strong>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
                         Intervalle approximatif (95 %) :
                         {max(
