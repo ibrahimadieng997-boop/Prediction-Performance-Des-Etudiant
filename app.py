@@ -40,19 +40,11 @@ TARGET_MIN, TARGET_MAX, TARGET_MEAN = 10, 100, 55.22
 MODEL_R2 = 0.9892
 MODEL_RMSE = 2.0394  # RMSE réel mesuré sur le jeu de validation
 CI_MARGIN = 1.96 * MODEL_RMSE  # approx. intervalle de prédiction à 95% (résidus ~ normaux)
-# HISTORY_FILE = "historique_predictions.csv"
-# MODEL_PATH = "rr_model.joblib"
-# ENCODER_PATH = "encoder.joblib"
-# SCALER_PATH = "scaler.joblib"
-# =========================================================================
-# CHEMINS DES FICHIERS (résolution dynamique du dossier courant)
-# =========================================================================
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+HISTORY_FILE = "historique_predictions.csv"
+MODEL_PATH = "rr_model.joblib"
+ENCODER_PATH = "encoder.joblib"
+SCALER_PATH = "scaler.joblib"
 
-HISTORY_FILE = os.path.join(BASE_DIR, "historique_predictions.csv")
-MODEL_PATH = os.path.join(BASE_DIR, "rr_model.joblib")
-ENCODER_PATH = os.path.join(BASE_DIR, "encoder.joblib")
-SCALER_PATH = os.path.join(BASE_DIR, "scaler.joblib")
 
 TIERS = [
     (85, TARGET_MAX, "Excellent", "#16a34a", "🌟"),
