@@ -1715,10 +1715,20 @@ with tab1:
 
 
     # ---------------------------------------------------------------------
-    # RESULTAT
-    # ---------------------------------------------------------------------
+    # ============================================================
+# AFFICHAGE DES RÉSULTATS
+# ============================================================
 
-   with col_result:
+col_form, col_result = st.columns([1, 1])
+
+with col_form:
+
+    st.markdown("#### 📝 Saisie des informations")
+
+    # Ton formulaire de prédiction ici
+
+
+with col_result:
 
     st.markdown("#### 🎯 Résultat")
 
@@ -1726,18 +1736,14 @@ with tab1:
 
         r = st.session_state.last_result
 
-        tier, color, icon = get_tier(
-            r["Score_predit"]
-        )
-
-        # ============================================================
-        # VALEURS DU RÉSULTAT
-        # ============================================================
-
+        # Récupération du résultat
         score_affiche = float(r["Score_predit"])
         confiance_affiche = float(r["Confiance"])
 
-        # Intervalle approximatif à 95 %
+        # Niveau de performance
+        tier, color, icon = get_tier(score_affiche)
+
+        # Intervalle approximatif
         borne_inf = max(
             TARGET_MIN,
             score_affiche - CI_MARGIN
@@ -1748,10 +1754,7 @@ with tab1:
             score_affiche + CI_MARGIN
         )
 
-        # ============================================================
-        # AFFICHAGE DU RÉSULTAT
-        # ============================================================
-
+        # Affichage
         st.markdown(
             f"""
             <div class="result-card">
