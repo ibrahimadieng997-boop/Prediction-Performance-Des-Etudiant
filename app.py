@@ -20,7 +20,7 @@ import os
 # CONFIGURATION DE LA PAGE
 # =========================================================================
 st.set_page_config(
-    page_title="Prédiction de la Performance des Étudiants",
+    page_title="Prédiction de la Performance académique des Étudiants",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded",
