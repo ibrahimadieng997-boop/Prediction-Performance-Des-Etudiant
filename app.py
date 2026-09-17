@@ -1718,15 +1718,9 @@ with tab1:
     # ============================================================
 # AFFICHAGE DES RÉSULTATS
 # ============================================================
-
-col_form, col_result = st.columns([1, 1])
-
-with col_form:
-
-    st.markdown("#### 📝 Saisie des informations")
-
-    # Ton formulaire de prédiction ici
-
+# ============================================================
+# COLONNE RÉSULTAT
+# ============================================================
 
 with col_result:
 
@@ -1736,14 +1730,19 @@ with col_result:
 
         r = st.session_state.last_result
 
-        # Récupération du résultat
+        # ----------------------------------------------------
+        # Récupération des valeurs
+        # ----------------------------------------------------
+
         score_affiche = float(r["Score_predit"])
         confiance_affiche = float(r["Confiance"])
 
-        # Niveau de performance
         tier, color, icon = get_tier(score_affiche)
 
+        # ----------------------------------------------------
         # Intervalle approximatif
+        # ----------------------------------------------------
+
         borne_inf = max(
             TARGET_MIN,
             score_affiche - CI_MARGIN
@@ -1754,7 +1753,10 @@ with col_result:
             score_affiche + CI_MARGIN
         )
 
-        # Affichage
+        # ----------------------------------------------------
+        # Affichage du résultat
+        # ----------------------------------------------------
+
         st.markdown(
             f"""
             <div class="result-card">
@@ -1790,13 +1792,41 @@ with col_result:
             unsafe_allow_html=True
         )
 
+        # ----------------------------------------------------
+        # Informations de débogage
+        # ----------------------------------------------------
+
+        debug = st.session_state.get(
+            "last_debug",
+            {}
+        )
+
+        if debug:
+
+            with st.expander("🔍 Informations techniques"):
+
+                st.write(
+                    "Colonnes utilisées :",
+                    debug.get(
+                        "colonnes_utilisees",
+                        []
+                    )
+                )
+
+                st.write(
+                    "Valeurs utilisées :",
+                    debug.get(
+                        "valeurs_brutes",
+                        {}
+                    )
+                )
+
     else:
 
         st.info(
             "Aucune prédiction disponible. "
             "Veuillez effectuer une prédiction."
         )
-
 
             # -------------------------------------------------------------
             # DIAGNOSTIC
