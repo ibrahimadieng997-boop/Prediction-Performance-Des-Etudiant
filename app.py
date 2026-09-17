@@ -1744,25 +1744,10 @@ with tab1:
                          {color}99
                      );
                      ">
-
-                    # <div>
-                    #     {icon}
-                    #     Indice de performance prédit
-                    # </div>
-
-                    # <div class="result-score">
-                    #     {r["Score_predit"]}
-                    # </div>
-
-                    # <div class="result-tier">
-                    #     {tier}
-                    # </div>
-
-                    # <div class="result-sub
-                    st.markdown(
-    """<div>⚠️ Indice de performance prédit</div>
-<div class="result-score">51.29</div>
-<div class="result-tier">Moyen</div>
+                     st.markdown(
+    f"""<div>\u26a0\ufe0f Indice de performance prédit</div>
+<div class="result-score">{r['Score_predit']}</div>
+<div class="result-tier">{tier}</div>
 <div class="result-sub">
 Intervalle approximatif (95 %) : 47.3 – 55.3 &nbsp;|&nbsp; Confiance : 98.9 %
 </div>""",
