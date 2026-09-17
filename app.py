@@ -821,48 +821,25 @@ def compute_confidence(heures_etude, notes_prec, heures_sommeil, sujets_pratique
     return round(min(99.5, max(35.0, confidence)), 1)
 
 
-def _ordered_feature_frame(feature_dict: dict) -> pd.DataFrame:
-    """
-    Construit le DataFrame des features dans l'ordre EXACT attendu par le
-    scaler entraîné. Si le scaler a été fit() sur un pandas.DataFrame (ce qui
-    est le cas la plupart du temps avec scikit-learn >= 1.0), il expose
-    `feature_names_in_` : on s'aligne dessus automatiquement plutôt que de
-    supposer un ordre fixe "à la main", ce qui est la source la plus commune
-    d'un score qui reste bloqué au minimum (chaque colonne se voit alors
-    appliquer la mauvaise moyenne/écart-type).
-    """
-    if hasattr(scaler, "feature_names_in_"):
-        cols = list(scaler.feature_names_in_)
-        manquantes = [c for c in cols if c not in feature_dict]
-        if manquantes:
-            # Le scaler attend des colonnes qu'on ne sait pas produire :
-            # on retombe sur l'ordre par défaut plutôt que de planter.
-            cols = DEFAULT_FEATURE_ORDER
-    else:
-        cols = DEFAULT_FEATURE_ORDER
-    return pd.DataFrame([feature_dict])[cols], cols
-
-
 def predict_one(heures_etude, notes_prec, activite, heures_sommeil, sujets_pratiques):
+    """
+    IMPORTANT : le modèle Ridge chargé a été entraîné sur les variables
+    BRUTES (non standardisées) — vérifié en testant directement les
+    fichiers .joblib fournis. Le `scaler.joblib` (RobustScaler) ne fait
+    donc PAS partie du pipeline d'inférence réel : lui passer les features
+    avant `model.predict()` écrase le signal des coefficients face à
+    l'intercept (-33.92) et fait retomber systématiquement la prédiction
+    au plancher (10). On appelle donc le modèle directement sur les
+    valeurs brutes, dans l'ordre utilisé à l'entraînement.
+    """
     activite_enc = encoder.transform([activite])[0]
-    feature_dict = {
-        "Heures_etude": heures_etude,
-        "Notes_precedentes": notes_prec,
-        "Activites_extrascolaires": activite_enc,
-        "Heures_sommeil": heures_sommeil,
-        "Sujets_entrainement_pratiques": sujets_pratiques,
-    }
-    x_df, cols_used = _ordered_feature_frame(feature_dict)
-    x_scaled = scaler.transform(x_df)
-    y_pred_raw = float(model.predict(x_scaled)[0])
+    x_new = np.array([[
+        heures_etude, notes_prec, activite_enc, heures_sommeil, sujets_pratiques
+    ]])
+    y_pred_raw = float(model.predict(x_new)[0])
     y_pred = round(min(TARGET_MAX, max(TARGET_MIN, y_pred_raw)), 2)
     confidence = compute_confidence(heures_etude, notes_prec, heures_sommeil, sujets_pratiques)
-    debug_info = {
-        "colonnes_utilisees": cols_used,
-        "valeurs_brutes": feature_dict,
-        "prediction_avant_clipping": round(y_pred_raw, 2),
-    }
-    return y_pred, confidence, debug_info
+    return y_pred, confidence
 
 
 def add_to_history(row: dict):
