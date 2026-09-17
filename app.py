@@ -1731,18 +1731,16 @@ with tab1:
             tier, color, icon = get_tier(
                 r["Score_predit"]
             )
-             # ============================================================
-# AFFICHAGE DU RÉSULTAT
+               # ============================================================
+# RÉSULTAT DE LA PRÉDICTION
 # ============================================================
 
 score_affiche = float(score)
 
-# Intervalle approximatif
 marge = 4.0
 borne_inf = max(0, score_affiche - marge)
 borne_sup = min(100, score_affiche + marge)
 
-# Niveau de performance
 niveau = get_tier(score_affiche)[0]
 
 st.markdown(
