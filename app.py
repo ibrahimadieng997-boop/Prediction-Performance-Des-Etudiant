@@ -259,16 +259,17 @@
 #     - **Algorithme** : Régression Ridge
 #     - **R² (validation)** : `{MODEL_R2:.4f}`
 #     - **RMSE (validation)** : `{MODEL_RMSE:.2f} pts`
-#     - **Données d'entraînement** : 10 000 étudiants
+#     - **Base de données** : 10 000 étudiants
 #     - **Variable cible** : Indice de performance (10–100)
 #     """)
 #     st.divider()
 #     st.markdown("### ℹ️ À propos du score de confiance")
 #     st.caption(
-#         "Combine la précision globale du modèle (R²) et la plausibilité des valeurs "
-#         "saisies par rapport aux données d'entraînement. Ce n'est pas un intervalle "
-#         "de confiance statistique classique."
-#     )
+#         "Le score de confiance combine la performance globale du modèle (R²) "
+           "et la plausibilité des valeurs saisies par rapport aux données d'entraînement. "
+           "Il constitue un indicateur d'aide à l'interprétation de la prédiction "
+           "et ne correspond pas à un intervalle de confiance statistique classique."
+#      )
 #     st.divider()
 #     st.markdown(f"### 🕓 Historique : {len(st.session_state.history)} prédiction(s)")
 #     if st.button("🗑️ Réinitialiser l'historique", use_container_width=True):
