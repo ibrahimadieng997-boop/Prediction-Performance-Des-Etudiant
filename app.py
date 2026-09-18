@@ -865,6 +865,7 @@ with st.sidebar:
     - **Variable cible** : Indice de performance (10–100)
     """)
     st.divider()
+
     st.markdown("### ℹ️ À propos du score de confiance")
     st.caption(
         "Combine la précision globale du modèle (R²) et la plausibilité des valeurs "
