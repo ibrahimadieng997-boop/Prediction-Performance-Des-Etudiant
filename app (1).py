@@ -229,55 +229,21 @@ def compute_confidence(heures_etude, notes_prec, heures_sommeil, sujets_pratique
     return round(min(99.5, max(35.0, confidence)), 1)
 
 
-def _as_frame_if_needed(x, estimator):
-    """Si l'objet a été entraîné avec des noms de colonnes, on les réutilise
-    (dans l'ordre positionnel) pour éviter les avertissements de scikit-learn."""
-    names = getattr(estimator, "feature_names_in_", None)
-    if names is not None and len(names) == x.shape[1]:
-        return pd.DataFrame(x, columns=list(names))
-    return x
-
-
-def build_model_input(heures_etude, notes_prec, activite_enc, heures_sommeil, sujets_pratiques):
-    """Construit le vecteur d'entrée du modèle EN APPLIQUANT LE SCALER,
-    comme lors de l'entraînement (le modèle Ridge attend des données standardisées)."""
-    x_raw = np.array(
-        [[heures_etude, notes_prec, activite_enc, heures_sommeil, sujets_pratiques]],
-        dtype=float,
-    )
-    n_in = getattr(scaler, "n_features_in_", x_raw.shape[1])
-
-    if n_in == x_raw.shape[1]:
-        # Le scaler a été ajusté sur les 5 colonnes
-        x_scaled = scaler.transform(_as_frame_if_needed(x_raw, scaler))
-        x_scaled = np.asarray(x_scaled, dtype=float)
-    else:
-        # Le scaler a été ajusté uniquement sur les 4 variables numériques
-        num_idx = [0, 1, 3, 4]
-        x_num = x_raw[:, num_idx]
-        x_num_scaled = np.asarray(scaler.transform(_as_frame_if_needed(x_num, scaler)), dtype=float)
-        x_scaled = x_raw.copy()
-        x_scaled[:, num_idx] = x_num_scaled
-
-    return x_raw, x_scaled
-
-
 def predict_one(heures_etude, notes_prec, activite, heures_sommeil, sujets_pratiques):
     activite_enc = encoder.transform([activite])[0]
-    x_raw, x_scaled = build_model_input(
+    x_new = np.array([[
         heures_etude, notes_prec, activite_enc, heures_sommeil, sujets_pratiques
-    )
-    y_pred_raw = float(np.ravel(model.predict(_as_frame_if_needed(x_scaled, model)))[0])
+    ]])
+    y_pred_raw = float(model.predict(x_new)[0])
     y_pred = round(min(TARGET_MAX, max(TARGET_MIN, y_pred_raw)), 2)
     confidence = compute_confidence(heures_etude, notes_prec, heures_sommeil, sujets_pratiques)
-
+    
     debug_info = {
         "prediction_avant_clipping": y_pred_raw,
         "colonnes_utilisees": DEFAULT_FEATURE_ORDER,
-        "valeurs_brutes": x_raw.tolist()[0],
-        "valeurs_standardisees": x_scaled.tolist()[0],
+        "valeurs_brutes": [heures_etude, notes_prec, activite_enc, heures_sommeil, sujets_pratiques],
     }
-
+    
     return y_pred, confidence, debug_info
 
 
@@ -325,12 +291,11 @@ with st.sidebar:
     """)
     st.divider()
     st.markdown("### ℹ️ À propos du score de confiance")
-    texte_confiance = (
+    st.caption(
         "Combine la précision globale du modèle (R²) et la plausibilité des valeurs "
         "saisies par rapport aux données d'entraînement. Ce n'est pas un intervalle "
         "de confiance statistique classique."
     )
-    st.caption(texte_confiance)
     st.divider()
     st.markdown(f"### 🕓 Historique : {len(st.session_state.history)} prédiction(s)")
     if st.button("🗑️ Réinitialiser l'historique", use_container_width=True):
@@ -410,19 +375,37 @@ with tab1:
         if "last_result" in st.session_state:
             r = st.session_state.last_result
             tier, color, icon = get_tier(r["Score_predit"])
-            ci_low = max(TARGET_MIN, r["Score_predit"] - CI_MARGIN)
-            ci_high = min(TARGET_MAX, r["Score_predit"] + CI_MARGIN)
             st.markdown(f"""
             <div class="result-card" style="background: linear-gradient(135deg, {color}dd, {color}99);">
                 <div>{icon} Indice de performance prédit</div>
                 <div class="result-score">{r['Score_predit']}</div>
                 <div class="result-tier">{tier}</div>
                 <div class="result-sub">
-                    Intervalle approx. (95%) : {ci_low:.1f} – {ci_high:.1f}
+                    Intervalle approx. (95%) : {max(TARGET_MIN, r['Score_predit']-CI_MARGIN):.1f} – {min(TARGET_MAX, r['Score_predit']+CI_MARGIN):.1f}
                     &nbsp;|&nbsp; Confiance : {r['Confiance']}%
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
+            debug = st.session_state.get("last_debug")
+            if debug is not None:
+                raw = debug["prediction_avant_clipping"]
+                with st.expander("🛠️ Diagnostic de la prédiction (à retirer une fois le bug corrigé)"):
+                    st.write(f"**Prédiction brute avant clipping [10, 100]** : `{raw}`")
+                    st.write(f"**Colonnes envoyées au scaler (dans cet ordre)** : `{debug['colonnes_utilisees']}`")
+                    st.write(f"**Valeurs brutes envoyées** : `{debug['valeurs_brutes']}`")
+                    if raw <= TARGET_MIN:
+                        st.warning(
+                            "La valeur brute est déjà ≤ 10 avant clipping. Si elle est très "
+                            "négative (ex. -80, -300…), ce n'est pas un cas limite normal : "
+                            "cela indique presque toujours que l'ordre des colonnes envoyées "
+                            "au `scaler`/`model` ne correspond pas exactement à celui utilisé "
+                            "lors de l'entraînement (StandardScaler applique alors la mauvaise "
+                            "moyenne/écart-type à chaque variable). Vérifiez dans votre notebook "
+                            "d'entraînement l'ordre exact des colonnes de X au moment du "
+                            "`scaler.fit(X)` / `model.fit(X_scaled, y)`, et comparez-le à "
+                            "`colonnes_utilisees` ci-dessus."
+                        )
 
             fig_gauge = go.Figure(go.Indicator(
                 mode="gauge+number",
@@ -474,7 +457,7 @@ with tab2:
         try:
             df_csv = pd.read_csv(fichier)
             colonnes_attendues = ["Heures_etude", "Notes_precedentes", "Activites_extrascolaires",
-                                  "Heures_sommeil", "Sujets_entrainement_pratiques"]
+                                   "Heures_sommeil", "Sujets_entrainement_pratiques"]
             manquantes = [c for c in colonnes_attendues if c not in df_csv.columns]
             if manquantes:
                 st.error(f"Colonnes manquantes dans le fichier : {', '.join(manquantes)}")
@@ -555,8 +538,8 @@ with tab3:
         )
 
         display_cols = ["Horodatage", "Heures_etude", "Notes_precedentes", "Activites_extrascolaires",
-                        "Heures_sommeil", "Sujets_entrainement_pratiques", "Score_predit",
-                        "Confiance", "Niveau", "Profil"]
+                         "Heures_sommeil", "Sujets_entrainement_pratiques", "Score_predit",
+                         "Confiance", "Niveau", "Profil"]
         display_cols = [c for c in display_cols if c in hist_df.columns]
 
         try:
@@ -607,7 +590,7 @@ with tab3:
             coefs = pd.DataFrame({
                 "Variable": ["Heures_etude", "Notes_precedentes", "Activites_extrascolaires",
                              "Heures_sommeil", "Sujets_entrainement_pratiques"],
-                "Coefficient": np.ravel(model.coef_),
+                "Coefficient": model.coef_,
             }).sort_values("Coefficient")
             fig_coef = px.bar(
                 coefs, x="Coefficient", y="Variable", orientation="h",
